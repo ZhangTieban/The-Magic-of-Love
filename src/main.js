@@ -10,6 +10,9 @@ import {
 import { createCapture } from './capture.js';
 import { createWarnings } from './warnings.js';
 import { createAlertCenter } from './alert-center.js';
+import { createExpLog } from './exp-log.js';
+import { createExpOcr } from './exp-ocr.js';
+import { bindNavigation } from './navigation.js';
 import { createKeepAwake } from './keep-awake.js';
 import { rectFromPoints } from './region.js';
 import { createStallWatch } from './stall-watch.js';
@@ -58,6 +61,12 @@ const frameTimestamps = [];
 
 const overlayContext = ui.overlay.getContext('2d');
 const keepAwake = createKeepAwake();
+const expLog = createExpLog({ root: el('expLog') });
+const expOcr = createExpOcr({ root: el('expLog'), accept: value => expLog.accept(value) });
+const expOption = document.createElement('option');
+expOption.value = 'exp';
+expOption.textContent = '經驗值數字';
+el('selectionTarget').append(expOption);
 const alertCenter = createAlertCenter({ stopSound: () => alerts.stopSound() });
 
 const alerts = createAlerts({
@@ -94,7 +103,7 @@ const capture = createCapture({
   onResult: handleResult,
   onStop: handleStopped,
   onError: handleCaptureError,
-  onFrame: (drawable, width, height) => warnings.process(drawable, width, height),
+  onFrame: (drawable, width, height) => { warnings.process(drawable, width, height); void expOcr.process(drawable, width, height); },
 });
 
 // A frame that fails to process no longer stops sampling, so the failure has to
@@ -321,7 +330,7 @@ function drawOverlay() {
 
   const preview = dragStart && dragCurrent ? rectFromPoints(dragStart, dragCurrent) : null;
   const target = el('selectionTarget').value;
-  const region = preview ?? (target === 'minimap' ? settings.region : warnings.states.find(s => s.id === target)?.config.region);
+  const region = preview ?? (target === 'minimap' ? settings.region : target === 'exp' ? expOcr.region : warnings.states.find(s => s.id === target)?.config.region);
 
   if (region) {
     overlayContext.fillStyle = 'rgba(5, 7, 11, 0.55)';
@@ -414,7 +423,8 @@ function bindRegionSelection() {
         persist();
         describeRegion();
       } else {
-        warnings.select(target, region, el('selectionMode').value === 'sample', ui.video);
+        if (target === 'exp') expOcr.select(region);
+        else warnings.select(target, region, el('selectionMode').value === 'sample', ui.video);
       }
     }
     drawOverlay();
@@ -544,10 +554,11 @@ bindButtons();
 bindRegionSelection();
 el('soundVolume').addEventListener('input', event => { el('volumeReadout').textContent = `${event.target.value}%`; });
 el('selectionTarget').addEventListener('change', () => {
-  el('selectionMode').disabled = el('selectionTarget').value === 'minimap';
+  el('selectionMode').disabled = ['minimap', 'exp'].includes(el('selectionTarget').value);
   ui.previewWrap.classList.toggle('needs-region', el('selectionTarget').value === 'minimap' && !settings.region);
   drawOverlay();
 });
 ui.overlay.addEventListener('pointercancel', () => { dragStart = null; dragCurrent = null; drawOverlay(); });
 refreshPermissionState();
 persist();
+bindNavigation();

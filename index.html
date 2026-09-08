@@ -23,6 +23,13 @@
 </header>
 
 <main>
+  <nav class="page-nav" aria-label="主要導覽">
+    <a href="#monitor">即時監控</a>
+    <a href="#warnings">畫面警告</a>
+    <a href="#experience">經驗值</a>
+    <a href="#history">觸發紀錄</a>
+    <a href="#settings">設定</a>
+  </nav>
   <section class="panel readout">
     <div class="count-box">
       <span id="dotCount" class="count">–</span>
@@ -61,7 +68,7 @@
     <button type="button" data-ack>確認警報並停止音效</button>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-page="monitor">
     <div class="panel-head">
       <h2>畫面與範圍</h2>
       <div class="panel-head-actions">
@@ -81,13 +88,47 @@
     <p id="regionInfo" class="muted small">尚未框選範圍，目前偵測整個畫面。</p>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-page="warnings" hidden>
     <h2>畫面警告</h2>
     <div id="warningList"></div>
     <p id="warningStorage" role="status"></p>
   </section>
 
-  <section class="panel">
+  <section id="expLog" class="panel exp-panel" data-page="experience" hidden>
+    <a class="page-shortcut" href="#monitor" id="expRegionLink">設定經驗值擷取範圍 →</a>
+    <div class="panel-head"><h2>經驗值紀錄</h2><span data-exp-samples class="muted">0 筆</span></div>
+    <div class="actions"><label><input data-exp-auto type="checkbox">自動讀取 EXP（5 秒）</label><span data-exp-ocr-status role="status">尚未設定 EXP 範圍</span></div>
+    <canvas data-exp-preview width="320" height="40" aria-label="最近擷取的 EXP"></canvas>
+    <dl class="exp-stats">
+      <div><dt>開始</dt><dd data-exp-started>--:--:--</dd></div>
+      <div><dt>累積時間</dt><dd data-exp-elapsed>0分0秒</dd></div>
+      <div><dt>每分鐘</dt><dd data-exp-per-min>EXP 0　HP 0　MP 0　金錢 0</dd></div>
+      <div><dt>預估 10 分鐘</dt><dd data-exp-proj-10>EXP 0　HP 0　MP 0　金錢 0</dd></div>
+      <div><dt>預估 60 分鐘</dt><dd data-exp-proj-60>EXP 0　HP 0　MP 0　金錢 0</dd></div>
+      <div><dt>全部累積</dt><dd data-exp-totals>EXP 0　HP 0　MP 0　金錢 0</dd></div>
+    </dl>
+    <div class="grid exp-inputs">
+      <label>目前 EXP<input data-exp-exp type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>目前 HP<input data-exp-hp type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>目前 MP<input data-exp-mp type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>目前金錢<input data-exp-meso type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>備註<input data-exp-note type="text" maxlength="120" placeholder="例如：起始、換圖、藥水補貨"></label>
+    </div>
+    <div class="actions">
+      <button data-exp-start type="button" class="primary">開始紀錄</button>
+      <button data-exp-stop type="button">暫停紀錄</button>
+      <button data-exp-delete type="button">刪除最新一筆</button>
+      <button data-exp-record type="button">新增紀錄</button>
+      <button data-exp-use-latest type="button">帶入最新值</button>
+      <button data-exp-export type="button">匯出 CSV</button>
+      <button data-exp-clear type="button">清除紀錄</button>
+      <span data-exp-status class="muted small" role="status"></span>
+    </div>
+    <div class="log-scroll"><table><thead><tr><th>時間</th><th>EXP</th><th>HP</th><th>MP</th><th>金錢</th><th>備註</th></tr></thead><tbody data-exp-rows></tbody></table></div>
+    <p data-exp-empty class="muted">尚無經驗值紀錄</p>
+  </section>
+
+  <section class="panel" data-page="settings" hidden>
     <h2>警報設定</h2>
     <div class="grid">
       <label>音效音量（%）<input id="soundVolume" type="range" min="0" max="100" step="1"><output id="volumeReadout">80%</output></label>
@@ -148,7 +189,7 @@
     </details>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-page="history" hidden>
     <div class="panel-head"><h2>觸發紀錄</h2><span id="logCount" class="muted"></span></div>
     <div class="actions">
       <label>種類 <select id="logFilter"><option value="">全部</option><option value="red-dot">小地圖紅點</option><option value="route">隱藏路線</option><option value="check">測謊／怪物確認</option><option value="rune">符文詛咒</option><option value="stalled">畫面中斷</option></select></label>
@@ -159,7 +200,7 @@
     <p id="logEmpty" class="muted">尚無紀錄</p>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-page="settings" hidden>
     <h2>使用說明</h2>
     <ol class="notes">
       <li>按「開始分享螢幕」，選擇遊戲視窗或整個螢幕。建議選「視窗」，畫面比較穩定。</li>
