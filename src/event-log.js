@@ -1,6 +1,6 @@
 export const LOG_KEY = 'alarm-event-log-v1';
 export const LOG_LIMIT = 500;
-export const EVENT_TYPES = { 'red-dot': '小地圖紅點', route: '隱藏路線', check: '測謊／怪物確認', rune: '符文詛咒', stalled: '畫面中斷' };
+export const EVENT_TYPES = { 'red-dot': '小地圖紅點', route: '滑鼠測試', check: '測謊／怪物確認', rune: '符文詛咒', stalled: '畫面中斷' };
 
 export function createEventLog(storage, onError = () => {}) {
   let entries = [];

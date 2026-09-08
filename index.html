@@ -13,7 +13,6 @@
     <img class="brand-mark" src="assets/maple-leaf.png" alt="紅色楓葉">
     <div>
       <h1>The Magic of Love</h1>
-      <p>警告出現／消失／再次出現狀態提醒</p>
     </div>
   </div>
   <div class="bar-status">
@@ -45,12 +44,9 @@
       <button id="startButton" type="button" class="primary">開始分享螢幕</button>
       <button id="stopButton" type="button" disabled>停止</button>
       <button id="testButton" type="button">測試通知</button>
-      <button id="nativeButton" type="button">連線 Win11 原生浮層</button>
-      <button id="nativeTestButton" type="button">測試原生浮層</button>
-      <button id="floatingButton" type="button">開啟瀏覽器置頂備援</button>
+      <button id="floatingButton" type="button">開啟瀏覽器置頂警告</button>
       <button id="silenceButton" type="button">停止音效</button>
     </div>
-    <span id="nativeStatus" class="muted small native-status"></span>
     <span id="floatingStatus" class="muted small"></span>
   </section>
 
@@ -63,7 +59,7 @@
         <time data-time></time>
       </div>
     </div>
-    <p data-empty>等待紅點、隱藏路線、測謊或符文警告。</p>
+    <p data-empty>等待紅點、滑鼠測試、測謊或符文警告。</p>
     <div class="alarm-list" data-active-list></div>
     <button type="button" data-ack>確認警報並停止音效</button>
   </section>
@@ -76,7 +72,7 @@
       </div>
     </div>
     <div class="selection-tools">
-      <label>框選目標 <select id="selectionTarget"><option value="minimap">小地圖紅點</option><option value="route">隱藏路線彈窗</option><option value="check">測謊／怪物名稱確認</option><option value="rune">符文詛咒紫色橫幅</option></select></label>
+      <label>框選目標 <select id="selectionTarget"><option value="minimap">小地圖紅點</option><option value="route">滑鼠測試</option><option value="check">測謊／怪物名稱確認</option><option value="rune">符文詛咒紫色橫幅</option></select></label>
       <label>框選用途 <select id="selectionMode" disabled><option value="region">搜尋區</option><option value="sample">擷取比對樣本</option></select></label>
     </div>
     <div id="previewWrap" class="preview">
@@ -192,7 +188,7 @@
   <section class="panel" data-page="history" hidden>
     <div class="panel-head"><h2>觸發紀錄</h2><span id="logCount" class="muted"></span></div>
     <div class="actions">
-      <label>種類 <select id="logFilter"><option value="">全部</option><option value="red-dot">小地圖紅點</option><option value="route">隱藏路線</option><option value="check">測謊／怪物確認</option><option value="rune">符文詛咒</option><option value="stalled">畫面中斷</option></select></label>
+      <label>種類 <select id="logFilter"><option value="">全部</option><option value="red-dot">小地圖紅點</option><option value="route">滑鼠測試</option><option value="check">測謊／怪物確認</option><option value="rune">符文詛咒</option><option value="stalled">畫面中斷</option></select></label>
       <button id="exportLogButton" type="button">匯出 CSV</button><button id="clearLogButton" type="button">清除紀錄</button>
     </div>
     <p id="logStatus" role="status" class="warn"></p>
@@ -208,8 +204,7 @@
       <li>確認框內偵測到的紅點有被綠框標出來，數字也對得上，就可以切回遊戲了。</li>
       <li><strong>不要站在地圖的出生點。</strong>別人進地圖時就出現在那裡，你自己的黃點會蓋住他的紅點，等於偵測不到最該偵測的那一刻。往旁邊站開就好。</li>
       <li>最小化遊戲視窗（或按「回到桌面」）會讓 Windows 停止繪製它，擷取就收不到畫面。這種情況會跳出「偵測已停止」通知，音效跟紅點警報不同，是往下的兩聲。</li>
-      <li><strong>Win11 原生置頂浮層：</strong>先啟動 <code>NativeOverlay.exe</code>，再按「連線 Win11 原生浮層」。它會以 TopMost、滑鼠穿透、不搶焦點方式顯示；紅點、隱藏路線、測謊、符文會依「出現 → 維持 → 消失 → 再次出現」同步到遊戲畫面上方。</li>
-      <li><strong>瀏覽器置頂備援：</strong>沒有啟動原生程式時，可按「開啟瀏覽器置頂備援」使用 Document Picture-in-Picture；此模式仍受瀏覽器安全限制，手動關閉後需再次開啟。</li>
+      <li><strong>瀏覽器置頂警告：</strong>按「開啟瀏覽器置頂警告」使用 Document Picture-in-Picture；此模式仍受瀏覽器安全限制，手動關閉後需再次開啟。</li>
       <li>畫面警告預設連續 2 幀命中才出現、連續 3 幀消失才解除，可個別調整，避免動畫單幀造成浮窗閃爍。</li>
       <li>系統通知需要瀏覽器權限；Windows 的「專注助理／勿擾」開啟時通知會被系統吞掉。</li>
       <li>擷取的畫面完全在你的瀏覽器裡處理，不會上傳到任何地方，也不載入第三方分析碼。</li>

@@ -486,14 +486,6 @@ td:last-child { min-width: 150px; }
   .actions button { flex: 1 1 145px; }
 }
 
-.native-status {
-  display: block;
-  grid-column: 1 / -1;
-}
-button.native-connected {
-  border-color: rgba(110, 242, 161, 0.7);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 0 0 1px rgba(110,242,161,.18), 0 8px 18px rgba(0,0,0,.24);
-}
 [hidden] { display: none !important; }
 .page-nav { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
 .page-nav a { color: var(--muted); padding: 10px 16px; text-decoration: none; border-bottom: 3px solid transparent; font-weight: 700; }

@@ -1,5 +1,4 @@
 import { createEventLog, EVENT_TYPES, logCsv } from './event-log.js';
-import { createNativeOverlayBridge } from './native-bridge.js';
 
 const LEAF_URL = new URL('assets/maple-leaf.png', window.location.href).href;
 
@@ -13,17 +12,6 @@ export function createAlertCenter({ stopSound }) {
   let transient = null;
   let transientTimer = null;
   let renderSerial = 0;
-  const nativeBridge = createNativeOverlayBridge({
-    onStatus: ({ state, message, connected }) => {
-      const statusEl = el('nativeStatus');
-      const button = el('nativeButton');
-      if (statusEl) statusEl.textContent = message;
-      if (button) {
-        button.textContent = connected || state === 'connecting' ? '中斷 Win11 原生浮層' : '連線 Win11 原生浮層';
-        button.classList.toggle('native-connected', connected);
-      }
-    },
-  });
 
   const stamp = time => new Date(time).toLocaleString('zh-TW', { hour12: false });
 
@@ -90,7 +78,6 @@ export function createAlertCenter({ stopSound }) {
 
   function renderNotices() {
     renderNotice(el('activeNotice'));
-    nativeBridge.setItems(visibleItems());
     if (floating && !floating.closed) {
       renderNotice(floating.document.querySelector('.alarm-notice'), { floatingMode: true });
     }
@@ -115,9 +102,6 @@ export function createAlertCenter({ stopSound }) {
   }
 
   el('activeNotice').querySelector('[data-ack]').onclick = ack;
-  el('nativeButton').onclick = () => nativeBridge.toggle();
-  el('nativeTestButton').onclick = () => nativeBridge.test();
-  el('nativeStatus').textContent = 'Win11 原生浮層未連線；先啟動 NativeOverlay.exe，再按「連線」';
   el('silenceButton').onclick = stopSound;
   el('logFilter').onchange = renderLog;
   el('clearLogButton').onclick = () => { log.clear(); renderLog(); };
@@ -131,8 +115,8 @@ export function createAlertCenter({ stopSound }) {
   const supported = 'documentPictureInPicture' in window;
   el('floatingButton').disabled = !supported;
   el('floatingStatus').textContent = supported
-    ? '瀏覽器置頂備援未開啟；原生浮層無法使用時可手動開啟此備援'
-    : '此瀏覽器不支援瀏覽器置頂備援；可改用 Win11 原生浮層';
+    ? '瀏覽器置頂警告未開啟'
+    : '此瀏覽器不支援置頂警告，請使用支援 Document Picture-in-Picture 的瀏覽器';
 
   el('floatingButton').onclick = async () => {
     if (floating && !floating.closed) { floating.close(); return; }
@@ -156,17 +140,17 @@ export function createAlertCenter({ stopSound }) {
       doc.head.append(style);
       const notice = doc.createElement('section');
       notice.className = 'alarm-notice idle';
-      notice.innerHTML = `<div class="alarm-head"><img class="alarm-leaf" alt="紅色楓葉"><div class="alarm-head-main"><span class="alarm-kicker">WIN11 置頂警告</span><h2 data-overlay-title>等待警報</h2><time data-time></time></div></div><p data-empty>等待紅點、隱藏路線、測謊或符文警告。</p><div class="alarm-list" data-active-list></div><button type="button" data-ack disabled>已確認</button>`;
+      notice.innerHTML = `<div class="alarm-head"><img class="alarm-leaf" alt="紅色楓葉"><div class="alarm-head-main"><span class="alarm-kicker">瀏覽器置頂警告</span><h2 data-overlay-title>等待警報</h2><time data-time></time></div></div><p data-empty>等待紅點、滑鼠測試、測謊或符文警告。</p><div class="alarm-list" data-active-list></div><button type="button" data-ack disabled>已確認</button>`;
       notice.querySelector('.alarm-leaf').src = LEAF_URL;
       notice.querySelector('[data-ack]').onclick = ack;
       doc.body.append(notice);
       renderNotice(notice, { floatingMode: true });
-      el('floatingButton').textContent = '關閉瀏覽器置頂備援';
-      el('floatingStatus').textContent = '瀏覽器置頂備援已開啟；後續警告會依狀態自動更新';
+      el('floatingButton').textContent = '關閉瀏覽器置頂警告';
+      el('floatingStatus').textContent = '瀏覽器置頂警告已開啟；後續警告會依狀態自動更新';
       floating.addEventListener('pagehide', () => {
         floating = null;
-        el('floatingButton').textContent = '開啟瀏覽器置頂備援';
-        el('floatingStatus').textContent = '瀏覽器置頂備援已關閉；需要時可手動再次開啟';
+        el('floatingButton').textContent = '開啟瀏覽器置頂警告';
+        el('floatingStatus').textContent = '瀏覽器置頂警告已關閉；需要時可手動再次開啟';
       }, { once: true });
     } catch (error) {
       el('floatingStatus').textContent = `無法開啟置頂警告：${error.message}`;

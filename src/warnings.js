@@ -3,7 +3,7 @@ import { toPixelRect } from './region.js';
 import { createAlertGate } from './alert-gate.js';
 
 const TYPES = [
-  ['route', '隱藏路線彈窗', [200, 150, 975, 890]],
+  ['route', '滑鼠測試', [0, 0, 533, 526]],
   ['check', '測謊／怪物名稱確認', [380, 213, 690, 220]],
   ['rune', '符文詛咒紫色橫幅', [450, 330, 1650, 240]],
 ];
@@ -73,7 +73,7 @@ export function createWarnings({ container, fire, channels, onAlert, onState = (
     s.template = null;
     try {
       const img = new Image();
-      img.src = s.config.sample || `${assetBase}${s.id}.png`;
+      img.src = s.config.sample || `${assetBase}${s.id === 'route' ? 'mouse-test' : s.id}.png`;
       await img.decode();
       if (s.loadRevision !== revision) return;
       const [x, y, w, h] = s.config.sample ? [0, 0, img.width, img.height] : s.crop;
