@@ -20,6 +20,14 @@
       <h1>The Magic of Love</h1>
     </div>
   </div>
+  <section id="activeNotice" class="title-alert idle" hidden aria-live="polite">
+    <span class="alarm-kicker">即時警告</span>
+    <strong data-overlay-title>等待警報</strong>
+    <time data-time></time>
+    <button type="button" data-ack>確認並停止音效</button>
+    <p data-empty hidden></p>
+    <div data-active-list hidden></div>
+  </section>
   <div class="bar-status">
     <span id="statusPill" class="pill pill-idle">待機中</span>
     <span id="sourceMode" class="muted"></span>
@@ -35,19 +43,6 @@
     <a href="#history">觸發紀錄</a>
     <a href="#settings">設定</a>
   </nav>
-  <section id="activeNotice" class="alarm-notice idle" hidden aria-live="polite">
-    <div class="alarm-head">
-      <img class="alarm-leaf" src="assets/maple-leaf.png" alt="紅色楓葉">
-      <div class="alarm-head-main">
-        <span class="alarm-kicker">即時警告狀態</span>
-        <h2 data-overlay-title>等待警報</h2>
-        <time data-time></time>
-      </div>
-      <button type="button" data-ack>確認警報並停止音效</button>
-    </div>
-    <p data-empty>等待紅點、滑鼠測試、測謊或符文警告。</p>
-    <div class="alarm-list" data-active-list></div>
-  </section>
   <section class="panel readout" data-page="monitor">
     <div class="count-box">
       <span id="dotCount" class="count">–</span>
@@ -69,9 +64,9 @@
     <span id="floatingStatus" class="muted small"></span>
   </section>
 
-  <section class="panel capture-page" data-page="red-dot" hidden>
+  <section class="panel capture-page" data-page="monitor">
     <div class="panel-head">
-      <h2>紅點偵測畫面</h2>
+      <h2>即時偵測與框選</h2>
       <div class="panel-head-actions">
         <button id="clearRegionButton" type="button" class="link" disabled>清除框選</button>
       </div>
@@ -95,7 +90,7 @@
   </section>
 
   <section id="expLog" class="panel exp-panel" data-page="experience" hidden>
-    <a class="page-shortcut" href="#red-dot" id="expRegionLink">設定經驗值擷取範圍 →</a>
+    <a class="page-shortcut" href="#monitor" id="expRegionLink">設定經驗值擷取範圍 →</a>
     <div class="panel-head"><h2>經驗值紀錄</h2><span data-exp-samples class="muted">0 筆</span></div>
     <div class="actions"><label><input data-exp-auto type="checkbox">自動讀取 EXP（5 秒）</label><span data-exp-ocr-status role="status">尚未設定 EXP 範圍</span></div>
     <canvas data-exp-preview width="320" height="40" aria-label="最近擷取的 EXP"></canvas>
@@ -155,8 +150,10 @@
       <span id="audioStatus" class="warn small" role="status"></span>
     </div>
 
-    <details class="advanced">
-      <summary>進階：紅點判定參數</summary>
+  </section>
+
+  <section class="panel" data-page="red-dot" hidden>
+      <h2>紅點判定參數</h2>
       <p class="muted small">預設值是對照實際小地圖截圖調出來的，會濾掉火把、木頭等橘紅色場景。畫面縮放或有濾鏡時才需要調整。</p>
       <div class="grid">
         <label>色相容差（度）
@@ -194,7 +191,6 @@
         </label>
         <button id="resetButton" type="button" class="link">重設為預設值</button>
       </div>
-    </details>
   </section>
 
   <section class="panel" data-page="history" hidden>

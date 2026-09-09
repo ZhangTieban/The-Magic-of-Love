@@ -103,6 +103,23 @@ body.alerting { animation: alert-flash 0.7s ease-in-out 4; }
   min-width: 0;
 }
 
+.title-alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  margin-left: auto;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 93, 122, 0.6);
+  border-radius: 6px;
+  background: rgba(74, 14, 29, 0.94);
+  color: #fff1b7;
+}
+.title-alert strong { overflow-wrap: anywhere; }
+.title-alert time { color: #ffd4dc; font-size: 12px; white-space: nowrap; }
+.title-alert button { padding: 5px 10px; white-space: nowrap; }
+
 .pill {
   padding: 3px 12px;
   border-radius: 999px;
