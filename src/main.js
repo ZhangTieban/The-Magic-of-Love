@@ -433,7 +433,7 @@ function bindRegionSelection() {
         describeRegion();
       } else {
         if (target === 'exp') expOcr.select(region);
-        else warnings.select(target, region, el('selectionMode').value === 'sample', ui.video);
+        else warnings.select(target, region, false, ui.video);
       }
     }
     drawOverlay();
@@ -563,7 +563,6 @@ bindButtons();
 bindRegionSelection();
 el('soundVolume').addEventListener('input', event => { el('volumeReadout').textContent = `${event.target.value}%`; });
 el('selectionTarget').addEventListener('change', () => {
-  el('selectionMode').disabled = ['minimap', 'exp'].includes(el('selectionTarget').value);
   ui.previewWrap.classList.toggle('needs-region', el('selectionTarget').value === 'minimap' && !settings.region);
   drawOverlay();
 });

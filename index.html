@@ -24,11 +24,25 @@
 <main>
   <nav class="page-nav" aria-label="主要導覽">
     <a href="#monitor">即時監控</a>
+    <a href="#red-dot">紅點偵測</a>
     <a href="#warnings">畫面警告</a>
     <a href="#experience">經驗值</a>
     <a href="#history">觸發紀錄</a>
     <a href="#settings">設定</a>
   </nav>
+  <section id="activeNotice" class="alarm-notice idle" hidden aria-live="polite">
+    <div class="alarm-head">
+      <img class="alarm-leaf" src="assets/maple-leaf.png" alt="紅色楓葉">
+      <div class="alarm-head-main">
+        <span class="alarm-kicker">即時警告狀態</span>
+        <h2 data-overlay-title>等待警報</h2>
+        <time data-time></time>
+      </div>
+      <button type="button" data-ack>確認警報並停止音效</button>
+    </div>
+    <p data-empty>等待紅點、滑鼠測試、測謊或符文警告。</p>
+    <div class="alarm-list" data-active-list></div>
+  </section>
   <section class="panel readout">
     <div class="count-box">
       <span id="dotCount" class="count">–</span>
@@ -50,30 +64,17 @@
     <span id="floatingStatus" class="muted small"></span>
   </section>
 
-  <section id="activeNotice" class="alarm-notice idle" hidden aria-live="polite">
-    <div class="alarm-head">
-      <img class="alarm-leaf" src="assets/maple-leaf.png" alt="紅色楓葉">
-      <div class="alarm-head-main">
-        <span class="alarm-kicker">即時警告狀態</span>
-        <h2 data-overlay-title>等待警報</h2>
-        <time data-time></time>
-      </div>
-    </div>
-    <p data-empty>等待紅點、滑鼠測試、測謊或符文警告。</p>
-    <div class="alarm-list" data-active-list></div>
-    <button type="button" data-ack>確認警報並停止音效</button>
-  </section>
+  <section class="monitor-home" data-page="monitor" aria-label="即時監控"></section>
 
-  <section class="panel" data-page="monitor">
+  <section class="panel capture-page" data-page="red-dot" hidden>
     <div class="panel-head">
-      <h2>畫面與範圍</h2>
+      <h2>紅點偵測畫面</h2>
       <div class="panel-head-actions">
         <button id="clearRegionButton" type="button" class="link" disabled>清除框選</button>
       </div>
     </div>
     <div class="selection-tools">
       <label>框選目標 <select id="selectionTarget"><option value="minimap">小地圖紅點</option><option value="route">滑鼠測試</option><option value="check">測謊／怪物名稱確認</option><option value="rune">符文詛咒紫色橫幅</option></select></label>
-      <label>框選用途 <select id="selectionMode" disabled><option value="region">搜尋區</option><option value="sample">擷取比對樣本</option></select></label>
     </div>
     <div id="previewWrap" class="preview">
       <video id="preview" muted playsinline></video>
@@ -91,7 +92,7 @@
   </section>
 
   <section id="expLog" class="panel exp-panel" data-page="experience" hidden>
-    <a class="page-shortcut" href="#monitor" id="expRegionLink">設定經驗值擷取範圍 →</a>
+    <a class="page-shortcut" href="#red-dot" id="expRegionLink">設定經驗值擷取範圍 →</a>
     <div class="panel-head"><h2>經驗值紀錄</h2><span data-exp-samples class="muted">0 筆</span></div>
     <div class="actions"><label><input data-exp-auto type="checkbox">自動讀取 EXP（5 秒）</label><span data-exp-ocr-status role="status">尚未設定 EXP 範圍</span></div>
     <canvas data-exp-preview width="320" height="40" aria-label="最近擷取的 EXP"></canvas>
