@@ -17,6 +17,8 @@
 
 * { box-sizing: border-box; }
 
+.mobile-unsupported { display: none; }
+
 body {
   min-height: 100vh;
   margin: 0;
@@ -511,6 +513,23 @@ main > [data-page]:not(.readout) { border: 0; border-radius: 0; box-shadow: none
   .actions > * { min-width: 0; max-width: 100%; }
   .brand h1 { font-size: 20px; }
   .readout .actions { width: 100%; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body > :not(.mobile-unsupported) { display: none !important; }
+  .mobile-unsupported {
+    display: grid;
+    min-height: 100dvh;
+    place-content: center;
+    justify-items: center;
+    gap: 16px;
+    padding: 32px 24px;
+    background: rgba(8, 14, 17, 0.94);
+    text-align: center;
+  }
+  .mobile-unsupported img { width: 72px; height: 72px; object-fit: contain; }
+  .mobile-unsupported h1 { margin: 0; color: #fff2bd; font-size: 24px; }
+  .mobile-unsupported p { max-width: 32rem; margin: 0; color: var(--muted); font-size: 16px; }
 }
 
 
