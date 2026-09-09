@@ -7,7 +7,7 @@ import { MIN_REGION_SIZE } from './region.js';
 
 // Bumped whenever the detector calibration changes, so options saved by an
 // earlier version are dropped rather than keeping the old behaviour alive.
-export const SETTINGS_VERSION = 4;
+export const SETTINGS_VERSION = 5;
 
 export const DEFAULT_SETTINGS = {
   version: SETTINGS_VERSION,
@@ -42,6 +42,8 @@ const DETECT_RANGES = {
   maxArea: [1, 100000, true],
   minFillRatio: [0, 1, false],
   maxAspectRatio: [1, 10, false],
+  minMergedFillRatio: [0, 1, false],
+  maxMergedAspectRatio: [1, 10, false],
   mergeThreshold: [1, 10, false],
 };
 

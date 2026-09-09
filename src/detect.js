@@ -14,7 +14,9 @@ export const DEFAULT_OPTIONS = {
   maxArea: 400,
   minFillRatio: 0.45,
   maxAspectRatio: 1.45,
-  splitMergedBlobs: false,
+  minMergedFillRatio: 0.68,
+  maxMergedAspectRatio: 3,
+  splitMergedBlobs: true,
   mergeThreshold: 1.6,
 };
 
@@ -110,8 +112,9 @@ export function detectRedDots(imageData, options = {}) {
     const blobHeight = maxY - minY + 1;
     const fillRatio = area / (blobWidth * blobHeight);
     const aspectRatio = Math.max(blobWidth / blobHeight, blobHeight / blobWidth);
-    if (area < opts.minArea || area > opts.maxArea
-      || fillRatio < opts.minFillRatio || aspectRatio > opts.maxAspectRatio) continue;
+    const isSingleShape = fillRatio >= opts.minFillRatio && aspectRatio <= opts.maxAspectRatio;
+    const isMergedShape = fillRatio >= opts.minMergedFillRatio && aspectRatio <= opts.maxMergedAspectRatio;
+    if (area < opts.minArea || area > opts.maxArea || (!isSingleShape && !isMergedShape)) continue;
     blobs.push({
       x: minX,
       y: minY,

@@ -43,7 +43,7 @@ const ui = {
 
 const SCALAR_FIELDS = ['threshold', 'cooldownSeconds', 'sampleFps', 'stableFrames', 'soundVolume', 'soundSeconds'];
 const TOGGLE_FIELDS = ['notifySystem', 'notifySound', 'notifyFlash'];
-const DETECT_NUMBER_FIELDS = ['hueTolerance', 'minSaturation', 'minValue', 'minArea', 'maxArea', 'minFillRatio', 'maxAspectRatio', 'mergeThreshold'];
+const DETECT_NUMBER_FIELDS = ['hueTolerance', 'minSaturation', 'minValue', 'minArea', 'maxArea', 'minFillRatio', 'maxAspectRatio', 'minMergedFillRatio', 'maxMergedAspectRatio', 'mergeThreshold'];
 const DETECT_TOGGLE_FIELDS = ['splitMergedBlobs'];
 
 let settings = loadSettings(localStorage);
@@ -196,7 +196,7 @@ function describeRegion() {
   ui.regionInfo.textContent = region
     ? `已框選範圍：畫面的 ${(region.width * 100).toFixed(1)}% × ${(region.height * 100).toFixed(1)}%，`
       + `左上角在 ${(region.x * 100).toFixed(1)}%, ${(region.y * 100).toFixed(1)}%。`
-    : '尚未框選範圍，目前偵測整個畫面。';
+    : '尚未框選範圍，紅點偵測尚未啟用。';
 }
 
 function setStatus(text, variant) {
