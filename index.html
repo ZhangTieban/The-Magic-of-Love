@@ -50,6 +50,37 @@
     </section>
   </section>
 
+  <section class="panel monitor-controls" data-page="monitor">
+    <h2>監控控制</h2>
+    <div class="actions">
+      <button id="startButton" type="button" class="primary">開始分享螢幕</button>
+      <button id="stopButton" type="button" disabled>停止</button>
+      <button id="testButton" type="button">測試通知</button>
+      <button id="floatingButton" type="button">開啟瀏覽器置頂警告</button>
+      <button id="silenceButton" type="button">停止音效</button>
+    </div>
+    <span id="floatingStatus" class="muted small"></span>
+  </section>
+
+  <section class="panel monitor-capture" data-page="monitor">
+    <div class="panel-head">
+      <h2>即時偵測與框選</h2>
+      <div class="panel-head-actions">
+        <button id="clearRegionButton" type="button" class="link" disabled>清除框選</button>
+      </div>
+    </div>
+    <div class="selection-tools">
+      <label>框選目標 <select id="selectionTarget"><option value="minimap">小地圖紅點</option><option value="route">滑鼠測試</option><option value="check">測謊／怪物名稱確認</option><option value="rune">符文詛咒紫色橫幅</option></select></label>
+    </div>
+    <div id="previewWrap" class="preview">
+      <video id="preview" muted playsinline></video>
+      <canvas id="overlay"></canvas>
+      <p id="previewHint" class="preview-hint">按「開始分享螢幕」並選擇遊戲視窗，接著在畫面上拖曳框出小地圖範圍。</p>
+      <p id="regionCallout" class="preview-callout">還沒框選範圍 — 請在下方畫面上拖曳，框出小地圖</p>
+    </div>
+    <p id="regionInfo" class="muted small">尚未框選範圍，紅點偵測尚未啟用。</p>
+  </section>
+
   <section class="panel readout" data-page="red-dot" hidden>
     <div class="count-box">
       <span id="dotCount" class="count">–</span>
@@ -61,32 +92,6 @@
       <div><dt>上次通知</dt><dd id="statLastAlert">尚未通知</dd></div>
       <div><dt>背景取樣</dt><dd id="statHidden">0 幀</dd></div>
     </dl>
-    <div class="actions">
-      <button id="startButton" type="button" class="primary">開始分享螢幕</button>
-      <button id="stopButton" type="button" disabled>停止</button>
-      <button id="testButton" type="button">測試通知</button>
-      <button id="floatingButton" type="button">開啟瀏覽器置頂警告</button>
-      <button id="silenceButton" type="button">停止音效</button>
-    </div>
-    <span id="floatingStatus" class="muted small"></span>
-    <div class="monitor-capture">
-      <div class="panel-head">
-        <h2>即時偵測與框選</h2>
-        <div class="panel-head-actions">
-          <button id="clearRegionButton" type="button" class="link" disabled>清除框選</button>
-        </div>
-      </div>
-      <div class="selection-tools">
-        <label>框選目標 <select id="selectionTarget"><option value="minimap">小地圖紅點</option><option value="route">滑鼠測試</option><option value="check">測謊／怪物名稱確認</option><option value="rune">符文詛咒紫色橫幅</option></select></label>
-      </div>
-      <div id="previewWrap" class="preview">
-        <video id="preview" muted playsinline></video>
-        <canvas id="overlay"></canvas>
-        <p id="previewHint" class="preview-hint">按「開始分享螢幕」並選擇遊戲視窗，接著在畫面上拖曳框出小地圖範圍。</p>
-        <p id="regionCallout" class="preview-callout">還沒框選範圍 — 請在下方畫面上拖曳，框出小地圖</p>
-      </div>
-      <p id="regionInfo" class="muted small">尚未框選範圍，紅點偵測尚未啟用。</p>
-    </div>
   </section>
 
   <section class="panel" data-page="warnings" hidden>

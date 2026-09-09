@@ -514,7 +514,8 @@ td:last-child { min-width: 150px; }
 .page-nav a[aria-current] { color: var(--accent-2); border-color: var(--accent-2); }
 .page-nav a:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
 main > [data-page]:not(.readout) { border: 0; border-radius: 0; box-shadow: none; background: rgba(13, 22, 23, .9); padding: 24px; }
-.monitor-capture { grid-column: 1 / -1; padding-top: 18px; border-top: 1px solid var(--line); }
+.monitor-controls .actions { margin-bottom: 10px; }
+.monitor-capture { padding-top: 24px; }
 .monitor-capture .preview { max-height: calc(100vh - 350px); min-height: 420px; }
 .monitor-capture .preview video, .monitor-capture .preview canvas { object-fit: contain; }
 .page-shortcut { display: inline-block; color: var(--accent-2); margin-bottom: 18px; }
