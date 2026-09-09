@@ -6,6 +6,23 @@ export const MIN_REGION_SIZE = 0.01;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
+/** Returns the rendered image bounds for object-fit: contain. */
+export function containRect(containerWidth, containerHeight, sourceWidth, sourceHeight) {
+  if (containerWidth <= 0 || containerHeight <= 0 || sourceWidth <= 0 || sourceHeight <= 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+
+  const scale = Math.min(containerWidth / sourceWidth, containerHeight / sourceHeight);
+  const width = sourceWidth * scale;
+  const height = sourceHeight * scale;
+  return {
+    x: (containerWidth - width) / 2,
+    y: (containerHeight - height) / 2,
+    width,
+    height,
+  };
+}
+
 /** Turns two normalised drag points into a rect, or null if the drag was too small. */
 export function rectFromPoints(start, end) {
   const left = clamp01(Math.min(start.x, end.x));

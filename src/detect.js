@@ -12,13 +12,26 @@ export const DEFAULT_OPTIONS = {
   // player. Lower this only if the capture is scaled below native resolution.
   minArea: 12,
   maxArea: 400,
-  minFillRatio: 0.45,
-  maxAspectRatio: 1.45,
-  minMergedFillRatio: 0.68,
-  maxMergedAspectRatio: 3,
-  splitMergedBlobs: true,
+  adaptiveArea: true,
+  splitMergedBlobs: false,
   mergeThreshold: 1.6,
 };
+
+const REFERENCE_REGION = { width: 319, height: 238 };
+
+function areaThresholds(width, height, options) {
+  if (!options.adaptiveArea) return { minArea: options.minArea, maxArea: options.maxArea };
+
+  const linearScale = Math.min(
+    width / REFERENCE_REGION.width,
+    height / REFERENCE_REGION.height,
+  );
+  const areaScale = Math.min(9, Math.max(0.25, linearScale * linearScale));
+  return {
+    minArea: Math.max(1, options.minArea * areaScale),
+    maxArea: Math.max(1, options.maxArea * areaScale),
+  };
+}
 
 function median(values) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -62,6 +75,7 @@ export function detectRedDots(imageData, options = {}) {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const { width, height, data } = imageData;
   const size = width * height;
+  const areaLimits = areaThresholds(width, height, opts);
 
   const mask = new Uint8Array(size);
   for (let i = 0, p = 0; i < size; i++, p += 4) {
@@ -108,18 +122,12 @@ export function detectRedDots(imageData, options = {}) {
       }
     }
 
-    const blobWidth = maxX - minX + 1;
-    const blobHeight = maxY - minY + 1;
-    const fillRatio = area / (blobWidth * blobHeight);
-    const aspectRatio = Math.max(blobWidth / blobHeight, blobHeight / blobWidth);
-    const isSingleShape = fillRatio >= opts.minFillRatio && aspectRatio <= opts.maxAspectRatio;
-    const isMergedShape = fillRatio >= opts.minMergedFillRatio && aspectRatio <= opts.maxMergedAspectRatio;
-    if (area < opts.minArea || area > opts.maxArea || (!isSingleShape && !isMergedShape)) continue;
+    if (area < areaLimits.minArea || area > areaLimits.maxArea) continue;
     blobs.push({
       x: minX,
       y: minY,
-      width: blobWidth,
-      height: blobHeight,
+      width: maxX - minX + 1,
+      height: maxY - minY + 1,
       area,
       dots: 1,
     });

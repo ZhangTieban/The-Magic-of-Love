@@ -7,7 +7,7 @@
 
 export const DEFAULT_ALERT_OPTIONS = {
   threshold: 1,
-  stableFrames: 2,
+  stableFrames: 1,
   // null means "use stableFrames". Warning-image detectors set this to 3 to
   // match the macOS helper's more conservative clear behaviour.
   clearStableFrames: null,

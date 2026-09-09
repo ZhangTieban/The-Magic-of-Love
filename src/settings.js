@@ -7,7 +7,7 @@ import { MIN_REGION_SIZE } from './region.js';
 
 // Bumped whenever the detector calibration changes, so options saved by an
 // earlier version are dropped rather than keeping the old behaviour alive.
-export const SETTINGS_VERSION = 5;
+export const SETTINGS_VERSION = 7;
 
 export const DEFAULT_SETTINGS = {
   version: SETTINGS_VERSION,
@@ -40,10 +40,6 @@ const DETECT_RANGES = {
   minValue: [0, 1, false],
   minArea: [1, 10000, true],
   maxArea: [1, 100000, true],
-  minFillRatio: [0, 1, false],
-  maxAspectRatio: [1, 10, false],
-  minMergedFillRatio: [0, 1, false],
-  maxMergedAspectRatio: [1, 10, false],
   mergeThreshold: [1, 10, false],
 };
 
@@ -88,6 +84,9 @@ export function normalizeSettings(raw) {
   const { version, region, detect, ...scalars } = DEFAULT_SETTINGS;
   const storedDetect = source.version === SETTINGS_VERSION ? source.detect : undefined;
   const detectOptions = normalizeGroup(storedDetect, DETECT_DEFAULTS, DETECT_RANGES);
+  const scalarSource = source.version === SETTINGS_VERSION
+    ? source
+    : { ...source, stableFrames: DEFAULT_SETTINGS.stableFrames };
 
   // An inverted area range matches no blob at all, which would leave the app
   // reporting zero dots for ever without saying why. Widening the upper bound
@@ -96,7 +95,7 @@ export function normalizeSettings(raw) {
 
   return {
     version: SETTINGS_VERSION,
-    ...normalizeGroup(source, scalars, RANGES),
+    ...normalizeGroup(scalarSource, scalars, RANGES),
     region: normalizeRegion(source.region),
     detect: detectOptions,
   };

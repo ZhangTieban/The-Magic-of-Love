@@ -20,15 +20,7 @@
       <h1>The Magic of Love</h1>
     </div>
   </div>
-  <section id="activeNotice" class="title-alert idle" hidden aria-live="polite">
-    <span class="alarm-kicker">即時警告</span>
-    <strong data-overlay-title>等待警報</strong>
-    <time data-time></time>
-    <button type="button" data-ack>確認並停止音效</button>
-    <p data-empty hidden></p>
-    <div data-active-list hidden></div>
-  </section>
-  <div class="bar-status">
+  <div class="bar-status" hidden>
     <span id="statusPill" class="pill pill-idle">待機中</span>
     <span id="sourceMode" class="muted"></span>
   </div>
@@ -43,7 +35,22 @@
     <a href="#history">觸發紀錄</a>
     <a href="#settings">設定</a>
   </nav>
-  <section class="panel readout" data-page="monitor">
+  <section class="panel" data-page="monitor">
+    <h2>即時警告</h2>
+    <section id="activeNotice" class="alarm-notice idle" aria-live="polite">
+      <div class="alarm-head">
+        <div class="alarm-head-main">
+          <strong data-overlay-title>等待警報</strong>
+          <time data-time></time>
+        </div>
+        <button type="button" data-ack>確認警報並停止音效</button>
+      </div>
+      <p data-empty class="muted">目前沒有警告</p>
+      <div data-active-list class="alarm-list"></div>
+    </section>
+  </section>
+
+  <section class="panel readout" data-page="red-dot" hidden>
     <div class="count-box">
       <span id="dotCount" class="count">–</span>
       <span class="count-label">目前紅點</span>
@@ -153,7 +160,7 @@
 
   <section class="panel" data-page="red-dot" hidden>
       <h2>紅點判定參數</h2>
-      <p class="muted small">預設值是對照實際小地圖截圖調出來的，會濾掉火把、木頭等橘紅色場景。畫面縮放或有濾鏡時才需要調整。</p>
+      <p class="muted small">採用原作者的 HSV 純紅色過濾、8 鄰域連通區域與面積判定。請只框選小地圖內容，畫面縮放或有濾鏡時再調整。</p>
       <div class="grid">
         <label>色相容差（度）
           <input id="hueTolerance" type="number" min="0" max="60" step="1">
@@ -170,28 +177,13 @@
         <label>最大點面積（px）
           <input id="maxArea" type="number" min="1" max="100000" step="1">
         </label>
-        <label>最低填充率
-          <input id="minFillRatio" type="number" min="0" max="1" step="0.05">
-          <span class="hint">排除細線與文字碎片</span>
-        </label>
-        <label>最大長寬比
-          <input id="maxAspectRatio" type="number" min="1" max="10" step="0.05">
-          <span class="hint">紅點應接近正方形</span>
-        </label>
-        <label>重疊點最低填充率
-          <input id="minMergedFillRatio" type="number" min="0" max="1" step="0.05">
-          <span class="hint">保留密集相連的紅點</span>
-        </label>
-        <label>重疊點最大長寬比
-          <input id="maxMergedAspectRatio" type="number" min="1" max="10" step="0.1">
-          <span class="hint">辨識橫向重疊的玩家紅點</span>
-        </label>
         <label>去彈跳幀數
           <input id="stableFrames" type="number" min="1" max="10" step="1">
           <span class="hint">連續幾幀一致才算數</span>
         </label>
       </div>
       <div class="toggles">
+        <label class="toggle"><input id="adaptiveArea" type="checkbox"> 依框選解析度自動縮放面積門檻</label>
         <label class="toggle"><input id="splitMergedBlobs" type="checkbox"> 估算重疊紅點人數</label>
         <label>合併判定倍率
           <input id="mergeThreshold" type="number" min="1" max="10" step="0.1">

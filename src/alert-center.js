@@ -73,7 +73,7 @@ export function createAlertCenter({ stopSound }) {
       ack.disabled = acknowledged || items.length === 0;
     }
 
-    if (!floatingMode) root.hidden = items.length === 0;
+    if (!floatingMode) root.hidden = false;
   }
 
   function renderNotices() {

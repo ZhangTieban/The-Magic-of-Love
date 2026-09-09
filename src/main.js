@@ -14,7 +14,7 @@ import { createExpLog } from './exp-log.js';
 import { createExpOcr } from './exp-ocr.js';
 import { bindNavigation } from './navigation.js';
 import { createKeepAwake } from './keep-awake.js';
-import { rectFromPoints } from './region.js';
+import { containRect, rectFromPoints } from './region.js';
 import { createStallWatch } from './stall-watch.js';
 import { DEFAULT_SETTINGS, loadSettings, normalizeSettings, saveSettings } from './settings.js';
 
@@ -43,8 +43,8 @@ const ui = {
 
 const SCALAR_FIELDS = ['threshold', 'cooldownSeconds', 'sampleFps', 'stableFrames', 'soundVolume', 'soundSeconds'];
 const TOGGLE_FIELDS = ['notifySystem', 'notifySound', 'notifyFlash'];
-const DETECT_NUMBER_FIELDS = ['hueTolerance', 'minSaturation', 'minValue', 'minArea', 'maxArea', 'minFillRatio', 'maxAspectRatio', 'minMergedFillRatio', 'maxMergedAspectRatio', 'mergeThreshold'];
-const DETECT_TOGGLE_FIELDS = ['splitMergedBlobs'];
+const DETECT_NUMBER_FIELDS = ['hueTolerance', 'minSaturation', 'minValue', 'minArea', 'maxArea', 'mergeThreshold'];
+const DETECT_TOGGLE_FIELDS = ['adaptiveArea', 'splitMergedBlobs'];
 
 let settings = loadSettings(localStorage);
 let gate = createGate();
@@ -336,6 +336,8 @@ function drawOverlay() {
   const { width, height } = ui.overlay;
   overlayContext.clearRect(0, 0, width, height);
   if (!width || !height) return;
+  const content = containRect(width, height, ui.video.videoWidth, ui.video.videoHeight);
+  if (!content.width || !content.height) return;
 
   const preview = dragStart && dragCurrent ? rectFromPoints(dragStart, dragCurrent) : null;
   const target = el('selectionTarget').value;
@@ -345,20 +347,20 @@ function drawOverlay() {
     overlayContext.fillStyle = 'rgba(5, 7, 11, 0.55)';
     overlayContext.fillRect(0, 0, width, height);
     overlayContext.clearRect(
-      region.x * width,
-      region.y * height,
-      region.width * width,
-      region.height * height,
+      content.x + region.x * content.width,
+      content.y + region.y * content.height,
+      region.width * content.width,
+      region.height * content.height,
     );
 
     overlayContext.strokeStyle = preview ? '#ffffff' : '#4c8dff';
     overlayContext.lineWidth = 2;
     overlayContext.setLineDash(preview ? [6, 4] : []);
     overlayContext.strokeRect(
-      region.x * width,
-      region.y * height,
-      region.width * width,
-      region.height * height,
+      content.x + region.x * content.width,
+      content.y + region.y * content.height,
+      region.width * content.width,
+      region.height * content.height,
     );
     overlayContext.setLineDash([]);
   }
@@ -370,9 +372,10 @@ function drawOverlay() {
     if (!r || !match || !size || match.score < s.config.threshold) continue;
     overlayContext.strokeStyle = '#ffb454';
     overlayContext.lineWidth = 3;
-    overlayContext.strokeRect((r.x + match.x / size.width * r.width) * width,
-      (r.y + match.y / size.height * r.height) * height,
-      match.width / size.width * r.width * width, match.height / size.height * r.height * height);
+    overlayContext.strokeRect(content.x + (r.x + match.x / size.width * r.width) * content.width,
+      content.y + (r.y + match.y / size.height * r.height) * content.height,
+      match.width / size.width * r.width * content.width,
+      match.height / size.height * r.height * content.height);
   }
 
   const { blobs, rect, frameWidth, frameHeight } = lastResult;
@@ -380,10 +383,10 @@ function drawOverlay() {
   overlayContext.font = `${Math.round(13 * (window.devicePixelRatio || 1))}px system-ui, sans-serif`;
 
   for (const blob of blobs) {
-    const x = ((rect.x + blob.x) / frameWidth) * width;
-    const y = ((rect.y + blob.y) / frameHeight) * height;
-    const w = (blob.width / frameWidth) * width;
-    const h = (blob.height / frameHeight) * height;
+    const x = content.x + ((rect.x + blob.x) / frameWidth) * content.width;
+    const y = content.y + ((rect.y + blob.y) / frameHeight) * content.height;
+    const w = (blob.width / frameWidth) * content.width;
+    const h = (blob.height / frameHeight) * content.height;
     const pad = 3;
 
     overlayContext.strokeStyle = '#35d07f';
@@ -398,9 +401,10 @@ function drawOverlay() {
 
 function pointerPosition(event) {
   const bounds = ui.overlay.getBoundingClientRect();
+  const content = containRect(bounds.width, bounds.height, ui.video.videoWidth, ui.video.videoHeight);
   return {
-    x: (event.clientX - bounds.left) / bounds.width,
-    y: (event.clientY - bounds.top) / bounds.height,
+    x: Math.min(1, Math.max(0, (event.clientX - bounds.left - content.x) / content.width)),
+    y: Math.min(1, Math.max(0, (event.clientY - bounds.top - content.y) / content.height)),
   };
 }
 
