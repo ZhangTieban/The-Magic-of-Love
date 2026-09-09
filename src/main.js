@@ -43,7 +43,7 @@ const ui = {
 
 const SCALAR_FIELDS = ['threshold', 'cooldownSeconds', 'sampleFps', 'stableFrames', 'soundVolume', 'soundSeconds'];
 const TOGGLE_FIELDS = ['notifySystem', 'notifySound', 'notifyFlash'];
-const DETECT_NUMBER_FIELDS = ['hueTolerance', 'minSaturation', 'minValue', 'minArea', 'maxArea', 'mergeThreshold'];
+const DETECT_NUMBER_FIELDS = ['hueTolerance', 'minSaturation', 'minValue', 'minArea', 'maxArea', 'minFillRatio', 'maxAspectRatio', 'mergeThreshold'];
 const DETECT_TOGGLE_FIELDS = ['splitMergedBlobs'];
 
 let settings = loadSettings(localStorage);
@@ -267,6 +267,15 @@ function handleResult(result) {
   if (document.hidden) {
     hiddenFrames++;
     ui.statHidden.textContent = `${hiddenFrames} 幀`;
+  }
+
+  if (!settings.region) {
+    ui.dotCount.textContent = '–';
+    ui.dotCount.classList.remove('hot');
+    setStatus('請先框選小地圖', 'live');
+    if (gate.isActive()) alertCenter.clearActive('red-dot');
+    gate = createGate();
+    return;
   }
 
   ui.dotCount.textContent = String(result.count);

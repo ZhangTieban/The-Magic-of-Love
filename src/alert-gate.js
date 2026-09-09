@@ -2,7 +2,7 @@
 // passed in, so it can be unit tested without timers.
 //
 // The gate exposes its active state as well as the one-shot notification edge.
-// This lets the Win11/Picture-in-Picture overlay stay visible for exactly as
+// This lets the Picture-in-Picture overlay stay visible for exactly as
 // long as the warning is present, then reappear on the next rising edge.
 
 export const DEFAULT_ALERT_OPTIONS = {

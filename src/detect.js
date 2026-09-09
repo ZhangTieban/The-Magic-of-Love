@@ -12,6 +12,8 @@ export const DEFAULT_OPTIONS = {
   // player. Lower this only if the capture is scaled below native resolution.
   minArea: 12,
   maxArea: 400,
+  minFillRatio: 0.45,
+  maxAspectRatio: 1.45,
   splitMergedBlobs: false,
   mergeThreshold: 1.6,
 };
@@ -104,12 +106,17 @@ export function detectRedDots(imageData, options = {}) {
       }
     }
 
-    if (area < opts.minArea || area > opts.maxArea) continue;
+    const blobWidth = maxX - minX + 1;
+    const blobHeight = maxY - minY + 1;
+    const fillRatio = area / (blobWidth * blobHeight);
+    const aspectRatio = Math.max(blobWidth / blobHeight, blobHeight / blobWidth);
+    if (area < opts.minArea || area > opts.maxArea
+      || fillRatio < opts.minFillRatio || aspectRatio > opts.maxAspectRatio) continue;
     blobs.push({
       x: minX,
       y: minY,
-      width: maxX - minX + 1,
-      height: maxY - minY + 1,
+      width: blobWidth,
+      height: blobHeight,
       area,
       dots: 1,
     });

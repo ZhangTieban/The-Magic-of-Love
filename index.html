@@ -170,6 +170,14 @@
         <label>最大點面積（px）
           <input id="maxArea" type="number" min="1" max="100000" step="1">
         </label>
+        <label>最低填充率
+          <input id="minFillRatio" type="number" min="0" max="1" step="0.05">
+          <span class="hint">排除細線與文字碎片</span>
+        </label>
+        <label>最大長寬比
+          <input id="maxAspectRatio" type="number" min="1" max="10" step="0.05">
+          <span class="hint">紅點應接近正方形</span>
+        </label>
         <label>去彈跳幀數
           <input id="stableFrames" type="number" min="1" max="10" step="1">
           <span class="hint">連續幾幀一致才算數</span>

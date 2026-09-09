@@ -3,11 +3,12 @@ import { toPixelRect } from './region.js';
 import { createAlertGate } from './alert-gate.js';
 
 const TYPES = [
-  ['route', '滑鼠測試', [0, 0, 533, 526]],
+  ['route', '滑鼠測試', [1, 0, 333, 340]],
   ['check', '測謊／怪物名稱確認', [380, 213, 690, 220]],
   ['rune', '符文詛咒紫色橫幅', [450, 330, 1650, 240]],
 ];
 const KEY = 'ms-warning-regions-v1';
+const STORAGE_VERSION = 2;
 const clamp = (v, fallback, lo, hi) => Number.isFinite(Number(v)) ? Math.max(lo, Math.min(hi, Number(v))) : fallback;
 export function normalizeWarning(raw = {}) {
   if (!raw || typeof raw !== 'object') raw = {};
@@ -25,7 +26,14 @@ export function createWarnings({ container, fire, channels, onAlert, onState = (
   try { saved = JSON.parse(storage.getItem(KEY)) || {}; } catch {}
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const states = TYPES.map(([id, name, crop]) => ({ id, name, crop, config: normalizeWarning(saved[id]), template: null, gate: createAlertGate(), result: null }));
+  const states = TYPES.map(([id, name, crop]) => {
+    const config = normalizeWarning(saved[id]);
+    if (id === 'route' && saved.__version !== STORAGE_VERSION) {
+      config.stableFrames = 1;
+      config.sample = null;
+    }
+    return { id, name, crop, config, template: null, gate: createAlertGate(), result: null };
+  });
   let generation = 0, busy = false;
   const worker = new Worker(new URL('./warning-worker.js', import.meta.url), { type: 'module' });
   worker.onerror = () => {
@@ -61,7 +69,7 @@ export function createWarnings({ container, fire, channels, onAlert, onState = (
     onChange();
   };
   function persist() {
-    try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(states.map(s => [s.id, s.config])))); }
+    try { storage.setItem(KEY, JSON.stringify({ __version: STORAGE_VERSION, ...Object.fromEntries(states.map(s => [s.id, s.config])) })); }
     catch { document.getElementById('warningStorage').textContent = '儲存失敗：目前設定僅於本次有效'; }
   }
   function resetGate(s) {
@@ -109,6 +117,7 @@ export function createWarnings({ container, fire, channels, onAlert, onState = (
     card.querySelector('[data-clear]').onclick = () => { generation++; s.config.region = null; resetGate(s); s.result = null; s.status.textContent = '尚未設定搜尋區'; persist(); onChange(); };
     s.status = card.querySelector('output'); container.append(card); loads.push(load(s));
   }
+  if (saved.__version !== STORAGE_VERSION) persist();
   return {
     states,
     ready: Promise.all(loads),
