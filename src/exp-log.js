@@ -1,5 +1,6 @@
-const STORAGE_KEY = 'the-magic-of-love-exp-log-v1';
-const LIMIT = 1000;
+import { pickupStats } from './pickup.js';
+
+const STORAGE_KEY = 'the-magic-of-love-pickup-log-v1';
 
 const NUMBER_FIELDS = ['exp', 'hp', 'mp', 'meso'];
 
@@ -10,6 +11,12 @@ function toNumber(value) {
 
 export function parseExp(text) {
   const match = String(text).trim().match(/^(\d{1,3}(?:,\d{3})+|\d+)(?:(?:\s+|\s*[\[(])\d+(?:\.\d+)?%[\])]?)?$/);
+  const value = match ? Number(match[1].replaceAll(',', '')) : NaN;
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+export function parseMeso(text) {
+  const match = String(text).trim().match(/^(\d{1,3}(?:,\d{3})+|\d+)$/);
   const value = match ? Number(match[1].replaceAll(',', '')) : NaN;
   return Number.isSafeInteger(value) ? value : null;
 }
@@ -43,7 +50,7 @@ function sanitizeEntry(raw) {
 function load(storage) {
   try {
     const raw = JSON.parse(storage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(raw) ? raw.map(sanitizeEntry).filter(Boolean).slice(0, LIMIT) : [];
+    return Array.isArray(raw) ? raw.map(sanitizeEntry).filter(Boolean) : [];
   } catch {
     return [];
   }
@@ -51,7 +58,7 @@ function load(storage) {
 
 function save(storage, entries) {
   try {
-    storage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(0, LIMIT)));
+    storage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch {
     // Private-mode storage failures should not break live tracking.
   }
@@ -83,10 +90,11 @@ export function expLogCsv(entries) {
   ].map(row => row.map(csvEscape).join(',')).join('\r\n');
 }
 
-export function createExpLog({ root, storage = localStorage, now = () => new Date() }) {
+export function createExpLog({ root, storage = localStorage, now = () => new Date(), onEvent = () => {} }) {
   let entries = load(storage);
   let active = false;
   let startTime = entries[0]?.session ?? null;
+  let stoppedAt = entries[0] ? Date.parse(entries[0].time) : null;
 
   const el = selector => root.querySelector(selector);
   const inputs = Object.fromEntries(NUMBER_FIELDS.map(field => [field, el(`[data-exp-${field}]`)]));
@@ -113,30 +121,18 @@ export function createExpLog({ root, storage = localStorage, now = () => new Dat
   }
 
   function renderStats() {
-    const session = entries.filter(entry => !startTime || Date.parse(entry.time) >= startTime);
-    const all = delta(session, Number.POSITIVE_INFINITY);
-    const last10 = delta(session, 10);
-    const last60 = delta(session, 60);
-    const base = last10 ?? last60 ?? all;
-    const sinceStart = active && startTime ? now() - startTime : (all?.elapsedMs ?? 0);
+    const session = entries.filter(entry => entry.session === startTime);
+    const sinceStart = startTime !== null ? Math.max(0, (active ? now().getTime() : stoppedAt ?? startTime) - startTime) : 0;
+    const { totals: gains, rates } = pickupStats(session, sinceStart);
 
     startedAt.textContent = startTime ? new Date(startTime).toLocaleTimeString('zh-TW', { hour12: false }) : '--:--:--';
     elapsed.textContent = formatDuration(sinceStart);
     samples.textContent = `${entries.length} 筆`;
 
-    if (!base) {
-      perMin.textContent = 'EXP 0　HP 0　MP 0　金錢 0';
-      projection10.textContent = 'EXP 0　HP 0　MP 0　金錢 0';
-      projection60.textContent = 'EXP 0　HP 0　MP 0　金錢 0';
-      totals.textContent = 'EXP 0　HP 0　MP 0　金錢 0';
-      return;
-    }
-
-    const rates = Object.fromEntries(NUMBER_FIELDS.map(field => [field, perMinute(base.newest, base.oldest, base.elapsedMs, field)]));
     perMin.textContent = `EXP ${formatNumber(rates.exp)}　HP ${formatNumber(rates.hp)}　MP ${formatNumber(rates.mp)}　金錢 ${formatNumber(rates.meso)}`;
     projection10.textContent = `EXP ${formatNumber(rates.exp * 10)}　HP ${formatNumber(rates.hp * 10)}　MP ${formatNumber(rates.mp * 10)}　金錢 ${formatNumber(rates.meso * 10)}`;
     projection60.textContent = `EXP ${formatNumber(rates.exp * 60)}　HP ${formatNumber(rates.hp * 60)}　MP ${formatNumber(rates.mp * 60)}　金錢 ${formatNumber(rates.meso * 60)}`;
-    totals.textContent = `EXP ${formatNumber(base.newest.exp - all.oldest.exp)}　HP ${formatNumber(base.newest.hp - all.oldest.hp)}　MP ${formatNumber(base.newest.mp - all.oldest.mp)}　金錢 ${formatNumber(base.newest.meso - all.oldest.meso)}`;
+    totals.textContent = `EXP ${formatNumber(gains.exp)}　HP ${formatNumber(gains.hp)}　MP ${formatNumber(gains.mp)}　金錢 ${formatNumber(gains.meso)}`;
   }
 
   function renderRows() {
@@ -166,26 +162,23 @@ export function createExpLog({ root, storage = localStorage, now = () => new Dat
     renderRows();
   }
 
-  function record(note = noteInput.value) {
-    if (parseExp(inputs.exp.value) === null) {
-      status.textContent = '請輸入有效的整數 EXP';
+  function record(note = noteInput.value, values = Object.fromEntries(NUMBER_FIELDS.map(field => [field, inputs[field].value || '0']))) {
+    if (NUMBER_FIELDS.some(field => parseMeso(values[field] ?? '0') === null)) {
+      status.textContent = '請輸入有效的單次獲得量';
       return null;
     }
-    if (entries[0] && Date.parse(entries[0].time) >= startTime && Number(inputs.exp.value) < entries[0].exp) {
-      status.textContent = 'EXP 下降：請確認讀值；升級後請開始新一輪紀錄';
-      return null;
-    }
+    if (startTime === null) startTime = now().getTime();
     const entry = {
       session: startTime,
       time: now().toISOString(),
-      exp: toNumber(inputs.exp.value),
-      hp: toNumber(inputs.hp.value),
-      mp: toNumber(inputs.mp.value),
-      meso: toNumber(inputs.meso.value),
+      exp: toNumber(values.exp),
+      hp: toNumber(values.hp),
+      mp: toNumber(values.mp),
+      meso: toNumber(values.meso),
       note: String(note ?? '').trim().slice(0, 120),
     };
     entries.unshift(entry);
-    entries.length = Math.min(entries.length, LIMIT);
+    stoppedAt = Date.parse(entry.time);
     save(storage, entries);
     status.textContent = `已紀錄 ${new Date(entry.time).toLocaleTimeString('zh-TW', { hour12: false })}`;
     render();
@@ -193,19 +186,22 @@ export function createExpLog({ root, storage = localStorage, now = () => new Dat
   }
 
   el('[data-exp-start]').onclick = () => {
-    if (parseExp(inputs.exp.value) === null) { status.textContent = '請先輸入目前 EXP 或啟用自動讀值'; return; }
+    if (active) return;
     active = true;
     startTime = now().getTime();
-    record('起始');
-    status.textContent = '已開始紀錄';
+    stoppedAt = null;
+    for (const field of NUMBER_FIELDS) inputs[field].value = '0';
+    status.textContent = '已開始新一輪獲得量紀錄';
+    onEvent({ type: 'record-start', startTime });
     render();
   };
-  el('[data-exp-stop]').onclick = () => { active = false; renderStats(); status.textContent = '已暫停'; };
-  el('[data-exp-delete]').onclick = () => { entries.shift(); save(storage, entries); render(); };
+  el('[data-exp-stop]').onclick = () => { if (active) stoppedAt = now().getTime(); active = false; onEvent({ type: 'record-stop', stoppedAt }); renderStats(); status.textContent = '已暫停'; };
+  el('[data-exp-delete]').onclick = () => { const deleted = entries.shift(); onEvent({ type: 'record-delete', deleted }); save(storage, entries); render(); };
 
-  el('[data-exp-record]').onclick = () => record();
+  el('[data-exp-record]').onclick = () => { const entry = record(); onEvent({ type: 'manual-record', entry }); };
   el('[data-exp-use-latest]').onclick = updateInputsFromNewest;
   el('[data-exp-clear]').onclick = () => {
+    onEvent({ type: 'record-clear', count: entries.length });
     entries = [];
     active = false;
     startTime = null;
@@ -227,6 +223,15 @@ export function createExpLog({ root, storage = localStorage, now = () => new Dat
   const timer = setInterval(renderStats, 1000);
 
   return { record, list: () => entries.map(entry => ({ ...entry })), get active() { return active; },
-    accept(value) { inputs.exp.value = String(value); if (active) record('自動讀值'); },
+    session: () => ({ active, startTime, stoppedAt }),
+    accept(values) {
+      if (!active) return;
+      const update = typeof values === 'number' ? { exp: values } : values;
+      const gains = { exp: 0, hp: 0, mp: 0, meso: 0 };
+      for (const field of ['exp', 'meso']) if (Number.isSafeInteger(update?.[field]) && update[field] > 0) gains[field] = update[field];
+      if (!gains.exp && !gains.meso) return;
+      for (const field of NUMBER_FIELDS) inputs[field].value = String(gains[field]);
+      return record('獲得提示', gains);
+    },
     destroy() { clearInterval(timer); } };
 }

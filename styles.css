@@ -557,4 +557,8 @@ main > [data-page]:not(.readout) { border: 0; border-radius: 0; box-shadow: none
 .exp-stats dd { margin: 6px 0 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .exp-inputs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
 .exp-inputs input { min-width: 0; width: 100%; box-sizing: border-box; }
-[data-exp-preview] { display: block; max-width: 100%; max-height: 100px; object-fit: contain; margin-top: 12px; }
+.ocr-readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; margin-top: 12px; }
+.ocr-readout { min-width: 0; }
+.ocr-readout strong, .ocr-readout span { display: block; }
+.ocr-readout span { min-height: 1.5em; margin-top: 4px; color: var(--muted); overflow-wrap: anywhere; }
+[data-exp-preview-exp], [data-exp-preview-meso] { display: block; max-width: 100%; max-height: 100px; object-fit: contain; margin-top: 8px; }

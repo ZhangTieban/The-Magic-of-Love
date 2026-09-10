@@ -101,10 +101,13 @@
   </section>
 
   <section id="expLog" class="panel exp-panel" data-page="experience" hidden>
-    <a class="page-shortcut" href="#monitor" id="expRegionLink">設定經驗值擷取範圍 →</a>
-    <div class="panel-head"><h2>經驗值紀錄</h2><span data-exp-samples class="muted">0 筆</span></div>
-    <div class="actions"><label><input data-exp-auto type="checkbox">自動讀取 EXP（5 秒）</label><span data-exp-ocr-status role="status">尚未設定 EXP 範圍</span></div>
-    <canvas data-exp-preview width="320" height="40" aria-label="最近擷取的 EXP"></canvas>
+    <a class="page-shortcut" href="#monitor" id="expRegionLink">設定經驗／楓幣獲得通知區 →</a>
+    <div class="panel-head"><h2>經驗／楓幣獲得紀錄</h2><span class="muted">通知計數 v3</span><span data-exp-samples class="muted">0 筆</span></div>
+    <div class="actions"><label><input data-exp-auto type="checkbox">自動讀取 EXP／金錢（連續）</label></div>
+    <div class="ocr-readouts">
+      <div class="ocr-readout"><strong>EXP</strong><span data-exp-ocr-status-exp role="status">尚未設定範圍</span><canvas data-exp-preview-exp width="320" height="40" aria-label="最近擷取的 EXP"></canvas></div>
+      <div class="ocr-readout"><strong>金錢</strong><span data-exp-ocr-status-meso role="status">尚未設定範圍</span><canvas data-exp-preview-meso width="320" height="40" aria-label="最近擷取的金錢"></canvas></div>
+    </div>
     <dl class="exp-stats">
       <div><dt>開始</dt><dd data-exp-started>--:--:--</dd></div>
       <div><dt>累積時間</dt><dd data-exp-elapsed>0分0秒</dd></div>
@@ -114,10 +117,10 @@
       <div><dt>全部累積</dt><dd data-exp-totals>EXP 0　HP 0　MP 0　金錢 0</dd></div>
     </dl>
     <div class="grid exp-inputs">
-      <label>目前 EXP<input data-exp-exp type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>本次獲得經驗<input data-exp-exp type="number" min="0" step="1" inputmode="numeric"></label>
       <label>目前 HP<input data-exp-hp type="number" min="0" step="1" inputmode="numeric"></label>
       <label>目前 MP<input data-exp-mp type="number" min="0" step="1" inputmode="numeric"></label>
-      <label>目前金錢<input data-exp-meso type="number" min="0" step="1" inputmode="numeric"></label>
+      <label>本次拾取楓幣<input data-exp-meso type="number" min="0" step="1" inputmode="numeric"></label>
       <label>備註<input data-exp-note type="text" maxlength="120" placeholder="例如：起始、換圖、藥水補貨"></label>
     </div>
     <div class="actions">
@@ -127,8 +130,10 @@
       <button data-exp-record type="button">新增紀錄</button>
       <button data-exp-use-latest type="button">帶入最新值</button>
       <button data-exp-export type="button">匯出 CSV</button>
+      <button data-ocr-audit-export type="button">匯出辨識追查 JSON</button>
       <button data-exp-clear type="button">清除紀錄</button>
       <span data-exp-status class="muted small" role="status"></span>
+      <span data-ocr-audit-status class="muted small" role="status">辨識追查 0 筆</span>
     </div>
     <div class="log-scroll"><table><thead><tr><th>時間</th><th>EXP</th><th>HP</th><th>MP</th><th>金錢</th><th>備註</th></tr></thead><tbody data-exp-rows></tbody></table></div>
     <p data-exp-empty class="muted">尚無經驗值紀錄</p>

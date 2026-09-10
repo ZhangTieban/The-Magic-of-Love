@@ -61,12 +61,14 @@ const frameTimestamps = [];
 
 const overlayContext = ui.overlay.getContext('2d');
 const keepAwake = createKeepAwake();
-const expLog = createExpLog({ root: el('expLog') });
-const expOcr = createExpOcr({ root: el('expLog'), accept: value => expLog.accept(value) });
-const expOption = document.createElement('option');
-expOption.value = 'exp';
-expOption.textContent = '經驗值數字';
-el('selectionTarget').append(expOption);
+const expLog = createExpLog({ root: el('expLog'), onEvent: event => expOcr.audit(event) });
+const expOcr = createExpOcr({ root: el('expLog'), accept: values => expLog.accept(values), session: () => expLog.session(), records: () => expLog.list() });
+for (const [value, label] of [['exp', '經驗／楓幣獲得通知區（完整文字）']]) {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = label;
+  el('selectionTarget').append(option);
+}
 const alertCenter = createAlertCenter({ stopSound: () => alerts.stopSound() });
 
 const alerts = createAlerts({
@@ -341,7 +343,7 @@ function drawOverlay() {
 
   const preview = dragStart && dragCurrent ? rectFromPoints(dragStart, dragCurrent) : null;
   const target = el('selectionTarget').value;
-  const region = preview ?? (target === 'minimap' ? settings.region : target === 'exp' ? expOcr.region : warnings.states.find(s => s.id === target)?.config.region);
+  const region = preview ?? (target === 'minimap' ? settings.region : ['exp', 'meso'].includes(target) ? expOcr.region(target) : warnings.states.find(s => s.id === target)?.config.region);
 
   if (region) {
     overlayContext.fillStyle = 'rgba(5, 7, 11, 0.55)';
@@ -436,7 +438,7 @@ function bindRegionSelection() {
         persist();
         describeRegion();
       } else {
-        if (target === 'exp') expOcr.select(region);
+        if (['exp', 'meso'].includes(target)) expOcr.select(target, region);
         else warnings.select(target, region, false, ui.video);
       }
     }

@@ -1,0 +1,8 @@
+{
+  "name": "the-magic-of-love",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
