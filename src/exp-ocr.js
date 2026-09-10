@@ -32,7 +32,7 @@ export function createExpOcr({ root, accept, storage = localStorage, session = (
   const auditEvent = event => audit.add({ at: new Date().toISOString(), ...event, session: session() });
   const exportButton = root.querySelector('[data-ocr-audit-export]');
   if (exportButton) exportButton.onclick = () => {
-    const payload = { ...audit.snapshot(), algorithm: 'pickup-lines-v3', records: records() };
+    const payload = { ...audit.snapshot(), algorithm: 'pickup-lines-v4', records: records() };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
     const link = document.createElement('a');
     link.href = url; link.download = `ocr-audit-${Date.now()}.json`; link.click();

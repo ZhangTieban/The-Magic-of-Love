@@ -54,7 +54,7 @@ export function parsePickupLines(text) {
 }
 
 export function createPickupLogTracker() {
-  let previous = [], pending = new Map(), unanchored = '', lostFrames = 0;
+  let previous = [], pending = new Map();
   return {
     read(text, { confidence = 0 } = {}) {
       const lines = parsePickupLines(text);
@@ -65,7 +65,7 @@ export function createPickupLogTracker() {
       }
       let overlap = Math.min(previous.length, lines.length);
       while (overlap && !previous.slice(-overlap).every((key, i) => key === lines[i].key)) overlap--;
-      let start = overlap;
+      let start = overlap, rollover = false;
       if (previous.length && !overlap) {
         // Recover correspondence across missing/intermittently unreadable rows.
         // Only rows after the last matched row can represent new notifications.
@@ -74,29 +74,21 @@ export function createPickupLogTracker() {
           dp[i][j] = previous[i] === lines[j].key ? 1 + dp[i + 1][j + 1] : Math.max(dp[i + 1][j], dp[i][j + 1]);
         }
         if (!dp[0][0]) {
-          const signature = JSON.stringify(lines.map(line => line.key));
-          lostFrames = unanchored === signature ? lostFrames + 1 : 1;
-          unanchored = signature;
-          pending.clear();
-          if (lostFrames >= 2 && confidence >= 70 && lines.filter(line => line.target).length >= 2) {
-            previous = lines.map(line => line.key);
-            lostFrames = 0;
-            const gains = {};
-            for (const line of lines) if (line.target) gains[line.target] = (gains[line.target] || 0) + line.value;
-            return { gains, lines, added: lines, decision: 'accepted-rollover', reason: '整批新提示已確認' };
+          if (confidence < 70 || lines.filter(line => line.target).length < 2) {
+            pending.clear();
+            return { gains: {}, lines, decision: 'uncertain', reason: '無法確認是否新提示，等待多行確認' };
           }
-          if (lostFrames >= 3) { previous = lines.map(line => line.key); lostFrames = 0; }
-          return { gains: {}, lines, decision: 'uncertain', reason: '無法確認是否新提示，略過並重新對齊' };
-        }
-        let i = 0, j = 0;
-        while (i < previous.length && j < lines.length) {
-          if (previous[i] === lines[j].key) { start = j + 1; i++; j++; }
-          else if (dp[i + 1][j] >= dp[i][j + 1]) i++;
-          else j++;
+          // Confirm individual rows across scrolling screens, not an identical full screen.
+          rollover = true;
+        } else {
+          let i = 0, j = 0;
+          while (i < previous.length && j < lines.length) {
+            if (previous[i] === lines[j].key) { start = j + 1; i++; j++; }
+            else if (dp[i + 1][j] >= dp[i][j + 1]) i++;
+            else j++;
+          }
         }
       }
-      lostFrames = 0;
-      unanchored = '';
       const added = lines.slice(start);
       const nextPending = new Map(), occurrences = new Map();
       const confirmed = [];
@@ -114,12 +106,20 @@ export function createPickupLogTracker() {
       // Keep missing rows in the history so their reappearance cannot add them again.
       if (confirmed.length) {
         previous = [...lines.slice(0, start), ...confirmed].map(line => line.key).slice(-64);
-        pending.clear();
+        // Rebase occurrence IDs after removing the confirmed prefix.
+        const remaining = new Map(), offsets = new Map(), ordinals = new Map();
+        for (const line of confirmed) offsets.set(line.key, (offsets.get(line.key) || 0) + 1);
+        for (const line of added.slice(confirmed.length)) {
+          const ordinal = ordinals.get(line.key) || 0;
+          ordinals.set(line.key, ordinal + 1);
+          remaining.set(`${line.key}#${ordinal}`, pending.get(`${line.key}#${ordinal + (offsets.get(line.key) || 0)}`));
+        }
+        pending = remaining;
       }
       const gains = {};
       for (const line of confirmed) if (line.target) gains[line.target] = (gains[line.target] || 0) + line.value;
       return { gains, reason: confirmed.length ? '已計入新增提示' : added.length ? '新增行等待確認' : '提示未新增，不重複計入', lines,
-        decision: confirmed.length ? 'accepted' : added.length ? 'pending' : 'duplicate', added: confirmed };
+        decision: confirmed.length ? (rollover ? 'accepted-rollover' : 'accepted') : added.length ? 'pending' : 'duplicate', added: confirmed };
     },
   };
 }

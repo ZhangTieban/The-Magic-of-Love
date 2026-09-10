@@ -96,6 +96,38 @@ test('a stable new row can confirm while later rows are still arriving', () => {
   tracker.read(a); tracker.read(a);
   assert.deepEqual(tracker.read([a,b].join('\n')).gains, {});
   assert.deepEqual(tracker.read([a,b,c].join('\n')).gains, { meso: 120 });
+  assert.deepEqual(tracker.read([b,c].join('\n')).gains, { meso: 130 });
+  assert.deepEqual(tracker.read([b,c].join('\n')).gains, {});
+});
+
+test('audit regression: partial acceptance preserves all trailing coin votes', () => {
+  const tracker = createPickupLogTracker();
+  const frame = values => values.map(n => `已獲得金幣 (+${n})`).join('\n');
+  tracker.read(frame([103]));
+  assert.deepEqual(tracker.read(frame([103,139,138,119])).gains, { meso: 103 });
+  assert.deepEqual(tracker.read(frame([103,139,138,119,114])).gains, { meso: 396 });
+  assert.deepEqual(tracker.read(frame([119,114,132])).gains, { meso: 114 });
+});
+
+test('rollover recovery confirms shared rows even when the screen keeps scrolling', () => {
+  const tracker = createPickupLogTracker();
+  const read = values => tracker.read(values.map(n => `已獲得金幣 (+${n})`).join('\n'), { confidence: 90 });
+  read([113,113]);
+  assert.deepEqual(read([113,113]).gains, { meso: 226 });
+  assert.deepEqual(read([126,109]).gains, {});
+  assert.deepEqual(read([109,99,118]).gains, { meso: 109 });
+  assert.deepEqual(read([99,118,140]).gains, { meso: 217 });
+  assert.deepEqual(read([118,140]).gains, { meso: 140 });
+  assert.deepEqual(read([118,140]).gains, {});
+});
+
+test('equal-valued pending rows are rebased after a partial acceptance', () => {
+  const tracker = createPickupLogTracker();
+  const a = '已獲得經驗值 (+70)';
+  tracker.read(a);
+  assert.deepEqual(tracker.read([a,a].join('\n')).gains, { exp: 70 });
+  assert.deepEqual(tracker.read([a,a].join('\n')).gains, { exp: 70 });
+  assert.deepEqual(tracker.read([a,a].join('\n')).gains, {});
 });
 
 test('unanchored replacements are reported as uncertain rather than counted as a fresh screen', () => {
