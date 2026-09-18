@@ -121,6 +121,8 @@ function gateOptions() {
     threshold: settings.threshold,
     stableFrames: settings.stableFrames,
     cooldownMs: settings.cooldownSeconds * 1000,
+    repeatWhileActive: true,
+    notifyOnCountIncrease: true,
   };
 }
 
@@ -297,6 +299,7 @@ function handleResult(result) {
   else if (redDotWasActive && !redDotIsActive) alertCenter.clearActive('red-dot');
 
   if (shouldNotifyRedDot) {
+    alertCenter.setActive(redDotEvent);
     alerts.fire({ ...redDotEvent, channels: settings });
     ui.statLastAlert.textContent = `${new Date().toLocaleTimeString('zh-TW', { hour12: false })} 小地圖紅點`;
   }

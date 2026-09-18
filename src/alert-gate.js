@@ -1,7 +1,8 @@
 // Decides when a detection deserves an alert. Pure state machine: time is
 // passed in, so it can be unit tested without timers.
 //
-// The gate exposes its active state as well as the one-shot notification edge.
+// The gate exposes its active state and notification triggers, optionally
+// repeating while active and notifying immediately on each new appearance.
 // This lets the Picture-in-Picture overlay stay visible for exactly as
 // long as the warning is present, then reappear on the next rising edge.
 
@@ -12,6 +13,8 @@ export const DEFAULT_ALERT_OPTIONS = {
   // match the macOS helper's more conservative clear behaviour.
   clearStableFrames: null,
   cooldownMs: 30000,
+  repeatWhileActive: false,
+  notifyOnCountIncrease: false,
 };
 
 export function createAlertGate(options = {}) {
@@ -22,6 +25,9 @@ export function createAlertGate(options = {}) {
   let active = false;
   let pending = false;
   let lastNotifiedAt = null;
+  let confirmedCount = 0;
+  let candidateCount = null;
+  let countStreak = 0;
 
   const cooldownElapsed = (now) =>
     lastNotifiedAt === null || now - lastNotifiedAt >= opts.cooldownMs;
@@ -45,6 +51,11 @@ export function createAlertGate(options = {}) {
 
     /** Feeds one detection result in; returns true when a notification should fire. */
     update(count, now) {
+      if (count === candidateCount) countStreak++;
+      else {
+        candidateCount = count;
+        countStreak = 1;
+      }
       if (count >= opts.threshold) {
         aboveStreak++;
         belowStreak = 0;
@@ -59,15 +70,29 @@ export function createAlertGate(options = {}) {
       if (!active && aboveStreak >= appearFrames()) {
         active = true;
         pending = true;
+        confirmedCount = count;
+        if (opts.repeatWhileActive) lastNotifiedAt = null;
       } else if (active && belowStreak >= clearFrames()) {
         active = false;
         pending = false;
+        confirmedCount = 0;
+      }
+
+      // A stable increase represents another arrival, even if the previous
+      // alert was acknowledged or its repeat interval has not elapsed yet.
+      if (active && opts.notifyOnCountIncrease && count !== confirmedCount &&
+          countStreak >= (count > confirmedCount ? appearFrames() : clearFrames())) {
+        if (count > confirmedCount && count >= opts.threshold) {
+          pending = true;
+          lastNotifiedAt = null;
+        }
+        confirmedCount = count;
       }
 
       // An alert raised during the cooldown is held, not dropped, so a player
       // who arrives just after the previous alert is still reported if the
       // condition remains active until the cooldown expires.
-      if (active && pending && cooldownElapsed(now)) {
+      if (active && (pending || (opts.repeatWhileActive && count >= opts.threshold)) && cooldownElapsed(now)) {
         pending = false;
         lastNotifiedAt = now;
         return true;
