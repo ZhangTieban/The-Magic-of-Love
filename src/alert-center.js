@@ -2,7 +2,7 @@ import { createEventLog, EVENT_TYPES, logCsv } from './event-log.js';
 
 const LEAF_URL = new URL('assets/maple-leaf.png', window.location.href).href;
 
-export function createAlertCenter({ stopSound }) {
+export function createAlertCenter({ stopSound, onAcknowledge = () => {} }) {
   const el = id => document.getElementById(id);
   const log = createEventLog(localStorage, message => { el('logStatus').textContent = message; });
   const active = new Map();
@@ -85,6 +85,7 @@ export function createAlertCenter({ stopSound }) {
 
   function ack() {
     acknowledged = true;
+    onAcknowledge();
     stopSound();
     renderNotices();
   }

@@ -76,11 +76,39 @@ test('another stable red dot alerts inside cooldown and restarts the repeat inte
   const gate = redGate();
   gate.update(1, 0);
   assert.equal(gate.update(1, 100), true);
-  // Acknowledgement only stops current audio; the detection gate stays active.
+  gate.acknowledge();
   assert.equal(gate.update(2, 200), false);
   assert.equal(gate.update(2, 300), true);
   assert.equal(gate.update(2, 5299), false);
   assert.equal(gate.update(2, 5300), true);
+});
+
+test('acknowledgement suppresses all timed repeats including zero cooldown', () => {
+  const gate = redGate({ stableFrames: 1 });
+  assert.equal(gate.update(1, 0), true);
+  gate.acknowledge();
+  assert.equal(gate.isActive(), true);
+  assert.equal(gate.update(1, 5000), false);
+  assert.equal(gate.update(1, 60000), false);
+  gate.configure({ cooldownMs: 0 });
+  assert.equal(gate.update(1, 61000), false);
+});
+
+test('acknowledged dots stay quiet through noise and decreases, then rearm on arrival', () => {
+  const gate = redGate();
+  gate.update(2, 0);
+  gate.update(2, 100);
+  gate.acknowledge();
+  for (const [count, time] of [[3, 6000], [2, 6100], [0, 6200], [2, 6300], [1, 6400], [1, 6500], [1, 12000]]) {
+    assert.equal(gate.update(count, time), false);
+  }
+  assert.equal(gate.update(2, 12100), false);
+  assert.equal(gate.update(2, 12200), true);
+  gate.acknowledge();
+  assert.equal(gate.update(0, 12300), false);
+  assert.equal(gate.update(0, 12400), false);
+  assert.equal(gate.update(1, 12500), false);
+  assert.equal(gate.update(1, 12600), true);
 });
 
 test('stable count decreases allow a later arrival, but brief fluctuations do not', () => {

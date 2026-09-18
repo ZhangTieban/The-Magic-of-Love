@@ -69,7 +69,10 @@ for (const [value, label] of [['exp', '經驗／楓幣獲得通知區（完整�
   option.textContent = label;
   el('selectionTarget').append(option);
 }
-const alertCenter = createAlertCenter({ stopSound: () => alerts.stopSound() });
+const alertCenter = createAlertCenter({
+  stopSound: () => alerts.stopSound(),
+  onAcknowledge: () => gate.acknowledge(),
+});
 
 const alerts = createAlerts({
   onEvent: event => alertCenter.record(event),

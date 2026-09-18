@@ -24,6 +24,7 @@ export function createAlertGate(options = {}) {
   let belowStreak = 0;
   let active = false;
   let pending = false;
+  let acknowledged = false;
   let lastNotifiedAt = null;
   let confirmedCount = 0;
   let candidateCount = null;
@@ -49,6 +50,12 @@ export function createAlertGate(options = {}) {
       Object.assign(opts, next);
     },
 
+    acknowledge() {
+      if (!active) return;
+      acknowledged = true;
+      pending = false;
+    },
+
     /** Feeds one detection result in; returns true when a notification should fire. */
     update(count, now) {
       if (count === candidateCount) countStreak++;
@@ -69,6 +76,7 @@ export function createAlertGate(options = {}) {
       // overlay blink off and back on.
       if (!active && aboveStreak >= appearFrames()) {
         active = true;
+        acknowledged = false;
         pending = true;
         confirmedCount = count;
         if (opts.repeatWhileActive) lastNotifiedAt = null;
@@ -83,6 +91,7 @@ export function createAlertGate(options = {}) {
       if (active && opts.notifyOnCountIncrease && count !== confirmedCount &&
           countStreak >= (count > confirmedCount ? appearFrames() : clearFrames())) {
         if (count > confirmedCount && count >= opts.threshold) {
+          acknowledged = false;
           pending = true;
           lastNotifiedAt = null;
         }
@@ -92,7 +101,7 @@ export function createAlertGate(options = {}) {
       // An alert raised during the cooldown is held, not dropped, so a player
       // who arrives just after the previous alert is still reported if the
       // condition remains active until the cooldown expires.
-      if (active && (pending || (opts.repeatWhileActive && count >= opts.threshold)) && cooldownElapsed(now)) {
+      if (active && !acknowledged && (pending || (opts.repeatWhileActive && count >= opts.threshold)) && cooldownElapsed(now)) {
         pending = false;
         lastNotifiedAt = now;
         return true;
